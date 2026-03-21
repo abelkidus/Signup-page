@@ -21,7 +21,7 @@ function App() {
         <input type="text" name="address" id="" required placeholder="" />
         <br />
 
-        <label for="bday">Enter birthdate: </label>
+        <label for="bday">Enter your birthdate: </label>
         <input type="date" name="bday" id="" required placeholder="" />
         <br />
 
