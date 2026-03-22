@@ -1,36 +1,18 @@
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Sign_up from "./Sign_up";
+import Log_in from "./Log_in";
+import Welcome from "./welcome";
+
 function App() {
   return (
-    <div className="App">
-      <form action="">
-        <label for="fname">Enter first name: </label>
-        <input type="text" name="fname" id="" required placeholder="" />
-        <br />
-        <label for="lname">Enter last name: </label>
-        <input type="text" name="lname" id="" required placeholder="" />
-        <br />
-
-        <label for="phone">Enter phone number: </label>
-        <input type="number" name="phone" id="" required placeholder="" />
-        <br />
-
-        <label for="email">Enter email: </label>
-        <input type="email" name="email" id="" required placeholder="" />
-        <br />
-
-        <label for="address">Enter address: </label>
-        <input type="text" name="address" id="" required placeholder="" />
-        <br />
-
-        <label for="bday">Enter your birthdate: </label>
-        <input type="date" name="bday" id="" required placeholder="" />
-        <br />
-
-        <label for="password">Enter password: </label>
-        <input type="password" name="password" id="" required placeholder="" />
-        <br />
-        <input type="button" value="Submit" />
-      </form>
-    </div>
+    <Router>
+      <Routes>
+        {/* <Route path="/Sign_up" element={<Sign_up />} /> */}
+        <Route path="/Log_in" element={<Log_in />} />
+        <Route path="/welcome" element={<Welcome />} />
+        {<Route path="/" element={<Sign_up />} />}
+      </Routes>
+    </Router>
   );
 }
 
