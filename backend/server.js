@@ -1,38 +1,86 @@
+require("dotenv").config();
+
 const express = require("express");
-const { Pool } = require("pg");
-const bcrypt = require("bcryptjs");
 const cors = require("cors");
+const bcrypt = require("bcryptjs");
+const pool = require("./db");
 
 const app = express();
-app.use(express.json());
-app.use(cors());
+const PORT = process.env.PORT || 5000;
 
-const pool = new Pool({
-  user: "postgres",
-  host: "localhost",
-  database: "myapp_db",
-  password: "yourpassword", // Replace with your DB password
-  port: 5432,
+app.use(cors());
+app.use(express.json());
+
+app.get("/", (req, res) => {
+  res.send("Auth server is running");
 });
 
-app.post("/login", async (req, res) => {
-  const { username, password } = req.body;
+app.post("/api/auth/signup", async (req, res) => {
   try {
-    const result = await pool.query("SELECT password_hash FROM users WHERE username = $1", [username]);
-    if (result.rows.length > 0) {
-      const isValid = await bcrypt.compare(password, result.rows[0].password_hash);
-      if (isValid) {
-        res.json({ success: true });
-      } else {
-        res.status(401).json({ success: false, message: "Invalid password" });
-      }
-    } else {
-      res.status(401).json({ success: false, message: "User not found" });
+    const { fullName, username, phone, email, address, birthDate, password } = req.body;
+
+    if (!fullName || !username || !email || !birthDate || !password) {
+      return res.status(400).json({ message: "Please fill in all required fields" });
     }
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ success: false });
+
+    const existingUser = await pool.query("SELECT id FROM users WHERE username = $1 OR email = $2", [username, email]);
+
+    if (existingUser.rows.length > 0) {
+      return res.status(400).json({ message: "Username or email already exists" });
+    }
+
+    const passwordHash = await bcrypt.hash(password, 10);
+
+    await pool.query(
+      `INSERT INTO users 
+      (full_name, username, phone, email, address, birth_date, password_hash)
+      VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+      [fullName, username, phone, email, address, birthDate, passwordHash],
+    );
+
+    res.status(201).json({ message: "User registered successfully" });
+  } catch (error) {
+    console.error("Signup error:", error);
+    res.status(500).json({ message: "Server error during signup" });
   }
 });
 
-app.listen(5000, () => console.log("Server running on port 5000"));
+app.post("/api/auth/login", async (req, res) => {
+  try {
+    const { username, password } = req.body;
+
+    if (!username || !password) {
+      return res.status(400).json({ message: "Username and password are required" });
+    }
+
+    const result = await pool.query("SELECT * FROM users WHERE username = $1", [username]);
+
+    if (result.rows.length === 0) {
+      return res.status(400).json({ message: "Invalid username or password" });
+    }
+
+    const user = result.rows[0];
+    const isPasswordCorrect = await bcrypt.compare(password, user.password_hash);
+
+    if (!isPasswordCorrect) {
+      return res.status(400).json({ message: "Invalid username or password" });
+    }
+
+    res.status(200).json({
+      message: "Login successful",
+      user: {
+        id: user.id,
+        fullName: user.full_name,
+        username: user.username,
+        email: user.email,
+      },
+    });
+  } catch (error) {
+    console.error("Login error:", error);
+    res.status(500).json({ message: "Server error during login" });
+  }
+});
+
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});

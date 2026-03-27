@@ -1,34 +1,52 @@
 import { useNavigate } from "react-router-dom";
-import "./Log_in.css";
-
-const username = "admin";
-const password = "1012";
 
 function Log_in() {
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const enteredUsername = e.target.username.value;
-    const enteredPassword = e.target.password.value;
-    if (enteredUsername === username && enteredPassword === password) {
-      navigate("/welcome");
-      console.log("Login successful");
-    } else {
-      alert("Invalid username or password");
+
+    const formData = {
+      username: e.target.username.value,
+      password: e.target.password.value,
+    };
+
+    try {
+      const response = await fetch("http://localhost:5000/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        alert(data.message);
+        navigate("/welcome");
+      } else {
+        alert(data.message);
+      }
+    } catch (error) {
+      console.error("Login error:", error);
+      alert("Could not connect to the server");
     }
   };
+
   return (
-    <div class="container">
+    <div className="container">
       <h2>Log In</h2>
+
       <form onSubmit={handleSubmit}>
-        <label for="username">Enter username: </label>
-        <input type="text" name="username" id="" required placeholder="" />
+        <label htmlFor="username">Enter username: </label>
+        <input type="text" name="username" id="username" required />
         <br />
 
-        <label for="password">Enter password: </label>
-        <input type="password" name="password" id="" required placeholder="" />
+        <label htmlFor="password">Enter password: </label>
+        <input type="password" name="password" id="password" required />
         <br />
+
         <button type="submit">Submit</button>
       </form>
     </div>

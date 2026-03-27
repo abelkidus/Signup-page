@@ -1,45 +1,80 @@
 import { Link, useNavigate } from "react-router-dom";
-import "./Sign_up.css";
 
 function Sign_up() {
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    navigate("/welcome");
-    console.log("Sign up successful");
+
+    const formData = {
+      fullName: e.target.fullname.value,
+      username: e.target.username.value,
+      phone: e.target.phone.value,
+      email: e.target.email.value,
+      address: e.target.address.value,
+      birthDate: e.target.bday.value,
+      password: e.target.password.value,
+    };
+
+    try {
+      const response = await fetch("http://localhost:5000/api/auth/signup", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        alert(data.message);
+        navigate("/Log_in");
+      } else {
+        alert(data.message);
+      }
+    } catch (error) {
+      console.error("Signup error:", error);
+      alert("Could not connect to the server");
+    }
   };
 
   return (
-    <div class="container">
+    <div className="container">
       <h2>Sign Up</h2>
+
       <form onSubmit={handleSubmit}>
-        <label for="fullname">Enter full name: </label>
-        <input type="text" name="fullname" id="" required placeholder="" />
+        <label htmlFor="fullname">Enter full name: </label>
+        <input type="text" name="fullname" id="fullname" required />
         <br />
 
-        <label for="phone">Enter phone number: </label>
-        <input type="number" name="phone" id="" required placeholder="" />
+        <label htmlFor="username">Enter username: </label>
+        <input type="text" name="username" id="username" required />
         <br />
 
-        <label for="email">Enter email: </label>
-        <input type="email" name="email" id="" required placeholder="" />
+        <label htmlFor="phone">Enter phone number: </label>
+        <input type="text" name="phone" id="phone" required />
         <br />
 
-        <label for="address">Enter address: </label>
-        <input type="text" name="address" id="" required placeholder="" />
+        <label htmlFor="email">Enter email: </label>
+        <input type="email" name="email" id="email" required />
         <br />
 
-        <label for="bday">Enter your birthdate: </label>
-        <input type="date" name="bday" id="" required placeholder="" />
+        <label htmlFor="address">Enter address: </label>
+        <input type="text" name="address" id="address" required />
         <br />
 
-        <label for="password">Enter password: </label>
-        <input type="password" name="password" id="" required placeholder="" />
+        <label htmlFor="bday">Enter your birthdate: </label>
+        <input type="date" name="bday" id="bday" required />
+        <br />
+
+        <label htmlFor="password">Enter password: </label>
+        <input type="password" name="password" id="password" required />
         <br />
 
         <button type="submit">Submit</button>
       </form>
+
       <p>
         Already have an account? <Link to="/Log_in">Log in here</Link>
       </p>
