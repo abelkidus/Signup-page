@@ -4,9 +4,12 @@ const express = require("express");
 const cors = require("cors");
 const bcrypt = require("bcryptjs");
 const pool = require("./db");
+const { signupValidationRules, validateSignup } = require("./validator");
+const { OAuth2Client } = require("google-auth-library");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 app.use(cors());
 app.use(express.json());
@@ -15,13 +18,9 @@ app.get("/", (req, res) => {
   res.send("Auth server is running");
 });
 
-app.post("/api/auth/signup", async (req, res) => {
+app.post("/users/signup", signupValidationRules, validateSignup, async (req, res) => {
   try {
     const { fullName, username, phone, email, address, birthDate, password } = req.body;
-
-    if (!fullName || !username || !email || !birthDate || !password) {
-      return res.status(400).json({ message: "Please fill in all required fields" });
-    }
 
     const existingUser = await pool.query("SELECT id FROM users WHERE username = $1 OR email = $2", [username, email]);
 
@@ -45,7 +44,7 @@ app.post("/api/auth/signup", async (req, res) => {
   }
 });
 
-app.post("/api/auth/login", async (req, res) => {
+app.post("/users/login", async (req, res) => {
   try {
     const { username, password } = req.body;
 
@@ -78,6 +77,50 @@ app.post("/api/auth/login", async (req, res) => {
   } catch (error) {
     console.error("Login error:", error);
     res.status(500).json({ message: "Server error during login" });
+  }
+});
+
+app.post("/users/google-login", async (req, res) => {
+  try {
+    const { credential } = req.body;
+
+    if (!credential) {
+      return res.status(400).json({ message: "Google credential is required" });
+    }
+
+    const ticket = await googleClient.verifyIdToken({
+      idToken: credential,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+
+    const payload = ticket.getPayload();
+
+    if (!payload || !payload.email || !payload.email_verified) {
+      return res.status(400).json({ message: "Invalid Google account" });
+    }
+
+    const result = await pool.query("SELECT * FROM users WHERE email = $1", [payload.email]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({
+        message: "No account found with this Google email. Please sign up first.",
+      });
+    }
+
+    const user = result.rows[0];
+
+    return res.status(200).json({
+      message: "Google login successful",
+      user: {
+        id: user.id,
+        fullName: user.full_name,
+        username: user.username,
+        email: user.email,
+      },
+    });
+  } catch (error) {
+    console.error("Google login error:", error);
+    return res.status(500).json({ message: "Server error during Google login" });
   }
 });
 

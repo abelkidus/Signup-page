@@ -1,7 +1,39 @@
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { GoogleLogin } from "@react-oauth/google";
 
 function Log_in() {
   const navigate = useNavigate();
+
+  const handleGoogleSuccess = async (credentialResponse) => {
+    try {
+      const credential = credentialResponse?.credential;
+
+      if (!credential) {
+        alert("Google login failed: missing credential");
+        return;
+      }
+
+      const response = await fetch("http://localhost:5000/users/google-login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ credential }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        alert(data.message);
+        navigate("/welcome", { state: { user: data.user } });
+      } else {
+        alert(data.message || "Google login failed");
+      }
+    } catch (error) {
+      console.error("Google login error:", error);
+      alert("Could not connect to the server for Google login");
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -12,7 +44,7 @@ function Log_in() {
     };
 
     try {
-      const response = await fetch("http://localhost:5000/api/auth/login", {
+      const response = await fetch("http://localhost:5000/users/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -24,7 +56,7 @@ function Log_in() {
 
       if (response.ok) {
         alert(data.message);
-        navigate("/welcome");
+        navigate("/welcome", { state: { user: data.user } });
       } else {
         alert(data.message);
       }
@@ -49,6 +81,17 @@ function Log_in() {
 
         <button type="submit">Submit</button>
       </form>
+      <GoogleLogin
+        onSuccess={handleGoogleSuccess}
+        onError={() => {
+          console.log("Loggin failed");
+          alert("Google login failed. Please try again.");
+        }}
+      />
+
+      <p>
+        Don't have an account? <Link to="/">Sign up here</Link>
+      </p>
     </div>
   );
 }

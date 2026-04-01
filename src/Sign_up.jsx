@@ -17,7 +17,7 @@ function Sign_up() {
     };
 
     try {
-      const response = await fetch("http://localhost:5000/api/auth/signup", {
+      const response = await fetch("http://localhost:5000/users/signup", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -45,31 +45,31 @@ function Sign_up() {
 
       <form onSubmit={handleSubmit}>
         <label htmlFor="fullname">Enter full name: </label>
-        <input type="text" name="fullname" id="fullname" required />
+        <input type="text" name="fullname" id="fullname" />
         <br />
 
         <label htmlFor="username">Enter username: </label>
-        <input type="text" name="username" id="username" required />
+        <input type="text" name="username" id="username" />
         <br />
 
         <label htmlFor="phone">Enter phone number: </label>
-        <input type="text" name="phone" id="phone" required />
+        <input type="text" name="phone" id="phone" />
         <br />
 
         <label htmlFor="email">Enter email: </label>
-        <input type="email" name="email" id="email" required />
+        <input type="email" name="email" id="email" />
         <br />
 
         <label htmlFor="address">Enter address: </label>
-        <input type="text" name="address" id="address" required />
+        <input type="text" name="address" id="address" />
         <br />
 
         <label htmlFor="bday">Enter your birthdate: </label>
-        <input type="date" name="bday" id="bday" required />
+        <input type="date" name="bday" id="bday" />
         <br />
 
         <label htmlFor="password">Enter password: </label>
-        <input type="password" name="password" id="password" required />
+        <input type="password" name="password" id="password" />
         <br />
 
         <button type="submit">Submit</button>
