@@ -1,4 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
 
 function Sign_up() {
   const navigate = useNavigate();
@@ -72,7 +73,8 @@ function Sign_up() {
         <input type="password" name="password" id="password" />
         <br />
 
-        <button type="submit">Submit</button>
+        {/* <button type="submit">Submit</button> */}
+        <Button type="submit">Submit</Button>
       </form>
 
       <p>

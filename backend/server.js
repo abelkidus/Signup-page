@@ -6,11 +6,29 @@ const bcrypt = require("bcryptjs");
 const pool = require("./db");
 const { signupValidationRules, validateSignup } = require("./validator");
 const { OAuth2Client } = require("google-auth-library");
+const helmet = require("helmet");
+const rateLimit = require("express-rate-limit");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+const limiter = rateLimit({
+  windowMs: 1 * 60 * 1000, // 1 minute
+  max: 20,
+});
 
+app.use(limiter);
+app.use(
+  helmet({
+    contentSecurityPolicy: false,
+    crossOriginEmbedderPolicy: false,
+  }),
+);
+// app.use(
+//   cors({
+//     origin: "http://localhost:5173",
+//   }),
+// );
 app.use(cors());
 app.use(express.json());
 
